@@ -1,0 +1,20 @@
+{
+  "name": "ai-assistant-extension",
+  "version": "1.0.0",
+  "description": "Chrome 擴充功能 - AI 助理使用 GROQ AI",
+  "main": "popup.js",
+  "scripts": {
+    "dev": "echo '開發模式：請在 Chrome 中載入擴充功能資料夾'"
+  },
+  "keywords": [
+    "chrome-extension",
+    "ai",
+    "groq"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "groq-sdk": "^0.3.0"
+  },
+  "devDependencies": {}
+}

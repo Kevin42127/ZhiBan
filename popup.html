@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 助理</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1 class="title">AI 助理</h1>
+      <button class="icon-btn" id="settingsBtn">
+        <span class="material-icons">settings</span>
+      </button>
+    </header>
+
+    <main class="main-content">
+      <div class="chat-container" id="chatContainer">
+        <div class="welcome-message">
+          <span class="material-icons welcome-icon">smart_toy</span>
+          <p>您好！我是 AI 助理，有什麼可以幫助您的嗎？</p>
+        </div>
+      </div>
+
+      <div class="input-section">
+        <div class="input-wrapper">
+          <input type="text" id="messageInput" placeholder="輸入您的問題..." class="message-input">
+          <button class="send-btn" id="sendBtn">
+            <span class="material-icons">send</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <div class="settings-panel" id="settingsPanel">
+      <div class="settings-header">
+        <h2>設定</h2>
+        <button class="icon-btn" id="closeSettingsBtn">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="settings-content">
+        <div class="setting-item">
+          <label for="apiEndpoint">API 端點</label>
+          <input type="text" id="apiEndpoint" placeholder="https://your-app.vercel.app/api/chat">
+        </div>
+        <button class="save-btn" id="saveSettingsBtn">儲存設定</button>
+      </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
