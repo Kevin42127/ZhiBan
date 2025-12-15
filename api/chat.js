@@ -1,11 +1,23 @@
-import { Groq } from 'groq-sdk';
+const Groq = require('groq-sdk');
 
-export default async function handler(req, res) {
+function setCorsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+}
+
+module.exports = async function handler(req, res) {
+  setCorsHeaders(res);
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { message } = req.body;
+  const { message } = req.body || {};
 
   if (!message || typeof message !== 'string') {
     return res.status(400).json({ error: 'Message is required' });
@@ -21,42 +33,37 @@ export default async function handler(req, res) {
       apiKey: groqApiKey,
     });
 
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-
-    const chatCompletion = await groq.chat.completions.create({
+    const completion = await groq.chat.completions.create({
       messages: [
         {
           role: 'system',
-          content: '你是一個友善且專業的 AI 助理，請用繁體中文回答問題。'
+          content: '你是一個友善且專業的 AI 助理，請用繁體中文回答問題。',
         },
         {
           role: 'user',
-          content: message
-        }
+          content: message,
+        },
       ],
       model: 'openai/gpt-oss-120b',
       temperature: 1,
-      max_completion_tokens: 8192,
+      max_completion_tokens: 2048,
       top_p: 1,
-      stream: true,
+      stream: false,
       reasoning_effort: 'medium',
-      stop: null
+      stop: null,
     });
 
-    for await (const chunk of chatCompletion) {
-      const content = chunk.choices[0]?.delta?.content || '';
-      if (content) {
-        res.write(`data: ${JSON.stringify({ content })}\n\n`);
-      }
-    }
+    const aiResponse =
+      (completion.choices &&
+        completion.choices[0] &&
+        completion.choices[0].message &&
+        completion.choices[0].message.content) ||
+      '無法取得回應';
 
-    res.write('data: [DONE]\n\n');
-    res.end();
+    return res.status(200).json({ response: aiResponse });
   } catch (error) {
     console.error('Error calling GROQ API:', error);
-    res.write(`data: ${JSON.stringify({ error: 'Internal server error' })}\n\n`);
-    res.end();
+    return res.status(500).json({ error: 'Internal server error' });
   }
-}
+};
+

@@ -65,8 +65,6 @@ function addMessage(content, isUser) {
   messageDiv.appendChild(contentDiv);
   chatContainer.appendChild(messageDiv);
   chatContainer.scrollTop = chatContainer.scrollHeight;
-  
-  return messageDiv;
 }
 
 async function sendMessage() {
@@ -80,8 +78,7 @@ async function sendMessage() {
   isLoading = true;
 
   addMessage(message, true);
-  const assistantMessage = addMessage('', false);
-  const contentDiv = assistantMessage.querySelector('.message-content');
+  addMessage('loading', false);
 
   try {
     const endpoint = await getStoredEndpoint();
@@ -97,44 +94,18 @@ async function sendMessage() {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop();
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') {
-            continue;
-          }
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.content) {
-              contentDiv.textContent += parsed.content;
-              chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-            if (parsed.error) {
-              throw new Error(parsed.error);
-            }
-          } catch (e) {
-            if (e.message !== 'Unexpected end of JSON input') {
-              console.error('Parse error:', e);
-            }
-          }
-        }
-      }
+    const data = await response.json();
+    
+    const lastMessage = chatContainer.querySelector('.message:last-child');
+    if (lastMessage) {
+      lastMessage.querySelector('.message-content').textContent = data.response || '抱歉，無法取得回應。';
     }
   } catch (error) {
     console.error('Error:', error);
-    contentDiv.textContent = '發生錯誤，請檢查 API 端點設定。';
+    const lastMessage = chatContainer.querySelector('.message:last-child');
+    if (lastMessage) {
+      lastMessage.querySelector('.message-content').textContent = '發生錯誤，請檢查 API 端點設定。';
+    }
     showNotification('連線錯誤，請檢查設定');
   } finally {
     sendBtn.disabled = false;
