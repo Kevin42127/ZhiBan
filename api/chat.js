@@ -29,7 +29,13 @@ export default async function handler(req, res) {
       apiKey: apiKey,
     });
 
+    const systemPrompt = {
+      role: 'system',
+      content: '你只能使用繁體中文和英文回應。所有回應必須僅包含繁體中文字符和英文字符，不得使用其他語言。'
+    };
+
     const messages = [
+      systemPrompt,
       ...(Array.isArray(history) ? history.map(msg => ({
         role: msg.role || 'user',
         content: msg.content || ''
