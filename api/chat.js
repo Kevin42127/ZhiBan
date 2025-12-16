@@ -5,12 +5,24 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') {
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
       return res.status(200).end();
     }
 
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const clientApiKey = req.headers['x-api-key'] || req.body?.apiKey;
+    const serverApiKey = process.env.CLIENT_API_KEY;
+
+    if (!serverApiKey) {
+      console.error('CLIENT_API_KEY is not configured');
+      return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    if (!clientApiKey || clientApiKey !== serverApiKey) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid API key' });
     }
 
     const { message, history = [], language = 'zh-TW' } = req.body || {};

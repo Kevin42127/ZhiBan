@@ -1,6 +1,7 @@
 const API_BASE_URL = 'https://zhiban.vercel.app/api/chat';
 const STORAGE_KEY = 'zhiban_conversation_history';
 const MAX_VISIBLE_MESSAGES = 50;
+const CLIENT_API_KEY = 'mq2Egl$@~]DRQ^}5#6rX;8t^-PG0Tr]G)A7%kgHgojz]pMngTB';
 
 let conversationHistory = [];
 let visibleStartIndex = 0;
@@ -393,6 +394,7 @@ async function sendMessage(message) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-API-Key': CLIENT_API_KEY,
       },
       body: JSON.stringify({
         message: message,
