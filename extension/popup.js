@@ -61,7 +61,28 @@ function renderHistory() {
   
   conversationHistory.forEach((msg) => {
     if (msg && msg.content !== undefined && msg.role) {
-      addMessage(msg.content, msg.role);
+      let role = msg.role;
+      if (role === 'assistant') {
+        role = 'ai';
+      }
+      const messageDiv = addMessage(msg.content, role);
+      if (messageDiv) {
+        const avatar = messageDiv.querySelector('.message-avatar');
+        if (!avatar) {
+          const avatarDiv = document.createElement('div');
+          avatarDiv.className = 'message-avatar';
+          const avatarIcon = document.createElement('span');
+          avatarIcon.className = 'material-icons';
+          avatarIcon.textContent = role === 'user' ? 'person' : 'smart_toy';
+          avatarDiv.appendChild(avatarIcon);
+          const contentDiv = messageDiv.querySelector('.message-content');
+          if (contentDiv) {
+            messageDiv.insertBefore(avatarDiv, contentDiv);
+          } else {
+            messageDiv.insertBefore(avatarDiv, messageDiv.firstChild);
+          }
+        }
+      }
     }
   });
 }
@@ -112,6 +133,10 @@ async function clearAllMessages() {
 }
 
 function addMessage(content, role, messageDiv = null) {
+  if (role === 'assistant') {
+    role = 'ai';
+  }
+  
   if (!messageDiv) {
     messageDiv = document.createElement('div');
     messageDiv.className = `message ${role}`;
@@ -268,7 +293,7 @@ async function sendMessage(message) {
               addMessage(aiMessageContent, 'ai', aiMessageDiv);
             }
             if (data.done) {
-              conversationHistory.push({ role: 'assistant', content: aiMessageContent });
+              conversationHistory.push({ role: 'ai', content: aiMessageContent });
               await saveConversationHistory();
               break;
             }
