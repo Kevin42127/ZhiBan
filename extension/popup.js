@@ -160,19 +160,30 @@ function addMessage(content, role, messageDiv = null) {
     messageDiv = document.createElement('div');
     messageDiv.className = `message ${role}`;
     
-    const avatarDiv = document.createElement('div');
-    avatarDiv.className = 'message-avatar';
-    const avatarIcon = document.createElement('span');
-    avatarIcon.className = 'material-icons';
-    avatarIcon.textContent = role === 'user' ? 'person' : 'smart_toy';
-    avatarDiv.appendChild(avatarIcon);
+    if (role === 'ai') {
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = 'message-avatar';
+      const avatarIcon = document.createElement('span');
+      avatarIcon.className = 'material-icons';
+      avatarIcon.textContent = 'smart_toy';
+      avatarDiv.appendChild(avatarIcon);
+      messageDiv.appendChild(avatarDiv);
+    }
     
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
     contentDiv.textContent = content;
-    
-    messageDiv.appendChild(avatarDiv);
     messageDiv.appendChild(contentDiv);
+    
+    if (role === 'user') {
+      const avatarDiv = document.createElement('div');
+      avatarDiv.className = 'message-avatar';
+      const avatarIcon = document.createElement('span');
+      avatarIcon.className = 'material-icons';
+      avatarIcon.textContent = 'person';
+      avatarDiv.appendChild(avatarIcon);
+      messageDiv.appendChild(avatarDiv);
+    }
     
     messagesContainer.appendChild(messageDiv);
   } else {
@@ -186,9 +197,17 @@ function addMessage(content, role, messageDiv = null) {
       avatarDiv.appendChild(avatarIcon);
       const contentDiv = messageDiv.querySelector('.message-content');
       if (contentDiv) {
-        messageDiv.insertBefore(avatarDiv, contentDiv);
+        if (role === 'ai') {
+          messageDiv.insertBefore(avatarDiv, contentDiv);
+        } else {
+          messageDiv.appendChild(avatarDiv);
+        }
       } else {
-        messageDiv.appendChild(avatarDiv);
+        if (role === 'ai') {
+          messageDiv.insertBefore(avatarDiv, messageDiv.firstChild);
+        } else {
+          messageDiv.appendChild(avatarDiv);
+        }
       }
     } else {
       const avatarIcon = avatarDiv.querySelector('.material-icons');
@@ -206,7 +225,12 @@ function addMessage(content, role, messageDiv = null) {
     if (!contentDiv) {
       contentDiv = document.createElement('div');
       contentDiv.className = 'message-content';
-      messageDiv.appendChild(contentDiv);
+      const avatarDiv = messageDiv.querySelector('.message-avatar');
+      if (avatarDiv && role === 'ai') {
+        messageDiv.insertBefore(contentDiv, avatarDiv.nextSibling);
+      } else {
+        messageDiv.appendChild(contentDiv);
+      }
     }
     contentDiv.textContent = content;
     

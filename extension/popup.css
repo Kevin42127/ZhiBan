@@ -9,7 +9,7 @@ body {
   width: 400px;
   height: 600px;
   overflow: hidden;
-  background: #667eea;
+  background: #f5f7fb;
 }
 
 .container {
@@ -20,7 +20,7 @@ body {
 }
 
 .header {
-  background: #667eea;
+  background: #0b93f6;
   color: white;
   padding: 16px 20px;
   text-align: center;
@@ -90,17 +90,22 @@ body {
 .messages {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-height: 100%;
 }
 
 .message {
   display: flex;
-  max-width: 80%;
-  animation: fadeIn 0.3s;
+  animation: fadeIn 0.3s ease-out;
   position: relative;
-  gap: 12px;
-  align-items: flex-start;
+}
+
+.message.user {
+  justify-content: flex-end;
+}
+
+.message.ai {
+  justify-content: flex-start;
 }
 
 .message-avatar {
@@ -113,10 +118,12 @@ body {
   flex-shrink: 0;
   color: white;
   font-size: 18px;
+  margin: 0 8px;
+  align-self: flex-end;
 }
 
 .message.user .message-avatar {
-  background: #667eea;
+  background: #0b93f6;
   order: 2;
 }
 
@@ -128,37 +135,6 @@ body {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.message.user {
-  align-self: flex-end;
-}
-
-.message.ai {
-  align-self: flex-start;
-}
-
-.message-content {
-  padding: 12px 16px;
-  border-radius: 16px;
-  word-wrap: break-word;
-  line-height: 1.5;
-  font-size: 14px;
-  position: relative;
-  flex: 1;
-  white-space: pre-wrap;
-  animation: messageAppear 0.3s ease-out;
-}
-
-@keyframes messageAppear {
-  from {
-    opacity: 0;
     transform: translateY(8px);
   }
   to {
@@ -167,11 +143,21 @@ body {
   }
 }
 
-.message.ai .message-content {
-  animation: typingEffect 0.3s ease-out;
+.message-content {
+  display: inline-block;
+  padding: 10px 12px;
+  border-radius: 16px;
+  line-height: 1.35;
+  font-size: 15px;
+  max-width: 70%;
+  min-width: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) inset;
+  animation: messageAppear 0.3s ease-out;
 }
 
-@keyframes typingEffect {
+@keyframes messageAppear {
   from {
     opacity: 0;
     transform: translateY(4px);
@@ -183,16 +169,17 @@ body {
 }
 
 .message.user .message-content {
-  background: #667eea;
+  background: #0b93f6;
   color: white;
-  border-bottom-right-radius: 4px;
-  order: 1;
+  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: 16px;
 }
 
 .message.ai .message-content {
-  background: #f1f3f5;
-  color: #212529;
-  border-bottom-left-radius: 4px;
+  background: #e5e7eb;
+  color: #111;
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 16px;
 }
 
 .loading {
@@ -200,7 +187,7 @@ body {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  color: #667eea;
+  color: #0b93f6;
   font-size: 14px;
   animation: fadeIn 0.3s ease-out;
 }
@@ -246,9 +233,9 @@ body {
 .input-container {
   display: flex;
   gap: 8px;
-  padding: 16px 20px;
+  padding: 12px;
   background: #ffffff;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid #eee;
   align-items: flex-end;
 }
 
@@ -259,22 +246,23 @@ body {
 
 #messageInput {
   width: 100%;
-  min-height: 44px;
-  max-height: 120px;
-  padding: 12px 16px;
-  border: 2px solid #e9ecef;
-  border-radius: 24px;
-  font-size: 14px;
+  min-height: 38px;
+  max-height: 180px;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
   font-family: inherit;
   outline: none;
   transition: border-color 0.2s, height 0.2s;
   resize: none;
   overflow-y: auto;
-  line-height: 1.5;
+  line-height: 1.35;
+  box-sizing: border-box;
 }
 
 #messageInput:focus {
-  border-color: #667eea;
+  border-color: #0b93f6;
 }
 
 #messageInput:disabled {
@@ -305,7 +293,7 @@ body {
   justify-content: center;
   width: 44px;
   height: 44px;
-  background: #667eea;
+  background: #0b93f6;
   color: white;
   border: none;
   border-radius: 50%;
@@ -315,8 +303,8 @@ body {
 
 .send-btn:hover:not(:disabled) {
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-  background: #5568d3;
+  box-shadow: 0 4px 12px rgba(11, 147, 246, 0.4);
+  background: #0a7fd4;
 }
 
 .send-btn:disabled {
@@ -435,12 +423,12 @@ body {
 }
 
 .confirm-dialog-btn-confirm {
-  background: #667eea;
+  background: #0b93f6;
   color: white;
 }
 
 .confirm-dialog-btn-confirm:hover {
-  background: #5568d3;
+  background: #0a7fd4;
 }
 
 .confirm-dialog-btn .material-icons {
