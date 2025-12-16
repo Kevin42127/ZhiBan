@@ -499,7 +499,13 @@ async function sendMessage(message) {
         } else {
           timeText = `${seconds} 秒`;
         }
-        throw new Error(`請求過於頻繁\n\n${errorData.message || '請稍後再試'}\n\n⏱️ ${timeText} 後可重試\n\n💡 使用限制：\n• 每 10 秒：最多 3 次\n• 每分鐘：最多 20 次\n• 每小時：最多 150 次\n• 每天：最多 2000 次`);
+        
+        let reasonText = errorData.message || '請稍後再試';
+        if (reasonText.includes('請求過於頻繁')) {
+          reasonText = '請稍後再試';
+        }
+        
+        throw new Error(`請求過於頻繁\n\n${reasonText}\n\n⏱️ ${timeText} 後可重試\n\n💡 使用限制：\n• 每 10 秒：最多 3 次\n• 每分鐘：最多 20 次\n• 每小時：最多 150 次\n• 每天：最多 2000 次`);
       }
       
       throw new Error(errorData.error || errorData.message || '請求失敗');
@@ -508,32 +514,42 @@ async function sendMessage(message) {
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
 
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
 
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          try {
-            const data = JSON.parse(line.slice(6));
-            if (data.content) {
-              aiMessageContent += data.content;
-              addMessage(aiMessageContent, 'ai', aiMessageDiv);
-              scrollToBottom();
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.content) {
+                aiMessageContent += data.content;
+                addMessage(aiMessageContent, 'ai', aiMessageDiv);
+                scrollToBottom();
+              }
+              if (data.done) {
+                conversationHistory.push({ role: 'ai', content: aiMessageContent });
+                await saveConversationHistory();
+                scrollToBottom();
+                break;
+              }
+            } catch (e) {
+              console.error('Parse error:', e);
             }
-            if (data.done) {
-              conversationHistory.push({ role: 'ai', content: aiMessageContent });
-              await saveConversationHistory();
-              scrollToBottom();
-              break;
-            }
-          } catch (e) {
-            console.error('Parse error:', e);
           }
         }
+      }
+    } catch (streamError) {
+      console.error('Stream reading error:', streamError);
+      if (aiMessageContent.length > 0) {
+        conversationHistory.push({ role: 'ai', content: aiMessageContent });
+        await saveConversationHistory();
+      } else {
+        throw new Error('連線中斷，請重試');
       }
     }
   } catch (error) {
@@ -542,9 +558,16 @@ async function sendMessage(message) {
     
     if (error.message.includes('模型回應格式錯誤') || error.message.includes('Parsing failed')) {
       errorMessage = 'AI 回應格式異常\n\n請稍後再試或重新發送訊息';
+    } else if (error.message.includes('請求過於頻繁')) {
+      errorMessage = error.message;
+    } else if (error.message.includes('Stream error') || error.message.includes('stream') || error.message.includes('連線中斷')) {
+      errorMessage = '連線中斷\n\n請檢查網路連線後重試';
+    } else if (!errorMessage.startsWith('錯誤: ')) {
+      errorMessage = `錯誤: ${errorMessage}`;
     }
     
-    showError(`錯誤: ${errorMessage}`);
+    showError(errorMessage);
+    
     if (aiMessageDiv && aiMessageDiv.parentNode) {
       aiMessageDiv.remove();
     }
