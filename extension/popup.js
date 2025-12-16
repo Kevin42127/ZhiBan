@@ -66,22 +66,6 @@ function addDeleteButton(messageDiv, index) {
   return deleteBtn;
 }
 
-async function deleteMessage(index) {
-  if (index < 0 || index >= conversationHistory.length) return;
-  
-<<<<<<< HEAD
-  conversationHistory.splice(index, 1);
-  await saveConversationHistory();
-  renderHistory();
-=======
-  const confirmed = await showConfirmDialog('確認刪除', '確定要刪除這條消息嗎？');
-  if (confirmed) {
-    conversationHistory.splice(index, 1);
-    await saveConversationHistory();
-    renderHistory();
-  }
-}
-
 function showConfirmDialog(title, message) {
   return new Promise((resolve) => {
     confirmDialogTitle.textContent = title;
@@ -114,18 +98,13 @@ function showConfirmDialog(title, message) {
     confirmDialogCancel.addEventListener('click', handleCancel);
     confirmDialogOverlay.addEventListener('click', handleOverlayClick);
   });
->>>>>>> 466b2ca (新增自訂義刪除確認對話框並實作根據用戶語言自動回應功能)
 }
 
 async function clearAllMessages() {
   if (conversationHistory.length === 0) return;
   
-<<<<<<< HEAD
-  if (confirm('確定要清空所有對話嗎？')) {
-=======
   const confirmed = await showConfirmDialog('確認清空', '確定要清空所有對話嗎？');
   if (confirmed) {
->>>>>>> 466b2ca (新增自訂義刪除確認對話框並實作根據用戶語言自動回應功能)
     conversationHistory = [];
     messageElements.clear();
     messagesContainer.innerHTML = '';
@@ -151,10 +130,6 @@ function addMessage(content, role, messageDiv = null, index = null) {
     
     messageDiv.appendChild(avatarDiv);
     messageDiv.appendChild(contentDiv);
-    
-    if (index !== null) {
-      addDeleteButton(messageDiv, index);
-    }
     
     messagesContainer.appendChild(messageDiv);
   } else {
