@@ -13,7 +13,7 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { message, history = [] } = req.body || {};
+    const { message, history = [], language = 'zh-TW' } = req.body || {};
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Message is required' });
@@ -29,9 +29,16 @@ export default async function handler(req, res) {
       apiKey: apiKey,
     });
 
+    let systemPromptContent = '';
+    if (language === 'zh-TW') {
+      systemPromptContent = '請使用繁體中文回應。所有回應必須使用繁體中文，不得使用其他語言。';
+    } else {
+      systemPromptContent = 'Please respond in English. All responses must be in English only, do not use other languages.';
+    }
+
     const systemPrompt = {
       role: 'system',
-      content: '你只能使用繁體中文和英文回應。所有回應必須僅包含繁體中文字符和英文字符，不得使用其他語言。'
+      content: systemPromptContent
     };
 
     const messages = [

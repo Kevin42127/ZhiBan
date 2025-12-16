@@ -40,6 +40,26 @@
     </div>
   </div>
 
+  <div class="confirm-dialog-overlay" id="confirmDialogOverlay" style="display: none;">
+    <div class="confirm-dialog">
+      <div class="confirm-dialog-icon">
+        <span class="material-icons">warning</span>
+      </div>
+      <div class="confirm-dialog-title" id="confirmDialogTitle">確認刪除</div>
+      <div class="confirm-dialog-message" id="confirmDialogMessage">確定要執行此操作嗎？</div>
+      <div class="confirm-dialog-buttons">
+        <button class="confirm-dialog-btn confirm-dialog-btn-cancel" id="confirmDialogCancel">
+          <span class="material-icons">close</span>
+          <span>取消</span>
+        </button>
+        <button class="confirm-dialog-btn confirm-dialog-btn-confirm" id="confirmDialogConfirm">
+          <span class="material-icons">check</span>
+          <span>確認</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>

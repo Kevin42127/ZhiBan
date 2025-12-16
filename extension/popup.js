@@ -9,6 +9,11 @@ const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
 const loadingIndicator = document.getElementById('loading');
 const clearBtn = document.getElementById('clearBtn');
+const confirmDialogOverlay = document.getElementById('confirmDialogOverlay');
+const confirmDialogTitle = document.getElementById('confirmDialogTitle');
+const confirmDialogMessage = document.getElementById('confirmDialogMessage');
+const confirmDialogConfirm = document.getElementById('confirmDialogConfirm');
+const confirmDialogCancel = document.getElementById('confirmDialogCancel');
 
 async function getApiUrl() {
   const result = await chrome.storage.sync.get(['apiUrl']);
@@ -64,15 +69,63 @@ function addDeleteButton(messageDiv, index) {
 async function deleteMessage(index) {
   if (index < 0 || index >= conversationHistory.length) return;
   
+<<<<<<< HEAD
   conversationHistory.splice(index, 1);
   await saveConversationHistory();
   renderHistory();
+=======
+  const confirmed = await showConfirmDialog('確認刪除', '確定要刪除這條消息嗎？');
+  if (confirmed) {
+    conversationHistory.splice(index, 1);
+    await saveConversationHistory();
+    renderHistory();
+  }
+}
+
+function showConfirmDialog(title, message) {
+  return new Promise((resolve) => {
+    confirmDialogTitle.textContent = title;
+    confirmDialogMessage.textContent = message;
+    confirmDialogOverlay.style.display = 'flex';
+    
+    const handleConfirm = () => {
+      confirmDialogOverlay.style.display = 'none';
+      confirmDialogConfirm.removeEventListener('click', handleConfirm);
+      confirmDialogCancel.removeEventListener('click', handleCancel);
+      confirmDialogOverlay.removeEventListener('click', handleOverlayClick);
+      resolve(true);
+    };
+    
+    const handleCancel = () => {
+      confirmDialogOverlay.style.display = 'none';
+      confirmDialogConfirm.removeEventListener('click', handleConfirm);
+      confirmDialogCancel.removeEventListener('click', handleCancel);
+      confirmDialogOverlay.removeEventListener('click', handleOverlayClick);
+      resolve(false);
+    };
+    
+    const handleOverlayClick = (e) => {
+      if (e.target === confirmDialogOverlay) {
+        handleCancel();
+      }
+    };
+    
+    confirmDialogConfirm.addEventListener('click', handleConfirm);
+    confirmDialogCancel.addEventListener('click', handleCancel);
+    confirmDialogOverlay.addEventListener('click', handleOverlayClick);
+  });
+>>>>>>> 466b2ca (新增自訂義刪除確認對話框並實作根據用戶語言自動回應功能)
 }
 
 async function clearAllMessages() {
   if (conversationHistory.length === 0) return;
   
+<<<<<<< HEAD
   if (confirm('確定要清空所有對話嗎？')) {
+=======
+  const confirmed = await showConfirmDialog('確認清空', '確定要清空所有對話嗎？');
+  if (confirmed) {
+>>>>>>> 466b2ca (新增自訂義刪除確認對話框並實作根據用戶語言自動回應功能)
     conversationHistory = [];
     messageElements.clear();
     messagesContainer.innerHTML = '';
@@ -127,6 +180,14 @@ function hideLoading() {
   messageInput.disabled = false;
 }
 
+function detectLanguage(text) {
+  const chineseRegex = /[\u4e00-\u9fff]/;
+  if (chineseRegex.test(text)) {
+    return 'zh-TW';
+  }
+  return 'en';
+}
+
 function showError(message) {
   const errorDiv = document.createElement('div');
   errorDiv.className = 'error-message';
@@ -156,6 +217,7 @@ async function sendMessage(message) {
 
   try {
     const apiUrl = await getApiUrl();
+    const detectedLanguage = detectLanguage(message);
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -164,7 +226,8 @@ async function sendMessage(message) {
       },
       body: JSON.stringify({
         message: message,
-        history: conversationHistory.slice(0, -1)
+        history: conversationHistory.slice(0, -1),
+        language: detectedLanguage
       }),
     });
 
