@@ -1,27 +1,108 @@
 const API_BASE_URL = 'https://zhiban.vercel.app/api/chat';
+const STORAGE_KEY = 'zhiban_conversation_history';
 
 let conversationHistory = [];
+let messageElements = new Map();
 
 const messagesContainer = document.getElementById('messages');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
 const loadingIndicator = document.getElementById('loading');
+const clearBtn = document.getElementById('clearBtn');
 
 async function getApiUrl() {
   const result = await chrome.storage.sync.get(['apiUrl']);
   return result.apiUrl || API_BASE_URL;
 }
 
-function addMessage(content, role, messageDiv = null) {
+async function saveConversationHistory() {
+  try {
+    await chrome.storage.local.set({ [STORAGE_KEY]: conversationHistory });
+  } catch (error) {
+    console.error('Failed to save conversation history:', error);
+  }
+}
+
+async function loadConversationHistory() {
+  try {
+    const result = await chrome.storage.local.get([STORAGE_KEY]);
+    if (result[STORAGE_KEY] && Array.isArray(result[STORAGE_KEY])) {
+      conversationHistory = result[STORAGE_KEY];
+      renderHistory();
+    }
+  } catch (error) {
+    console.error('Failed to load conversation history:', error);
+  }
+}
+
+function renderHistory() {
+  messagesContainer.innerHTML = '';
+  messageElements.clear();
+  
+  conversationHistory.forEach((msg, index) => {
+    const messageDiv = addMessage(msg.content, msg.role, null, index);
+    messageElements.set(index, { element: messageDiv, data: msg });
+  });
+}
+
+function addDeleteButton(messageDiv, index) {
+  if (messageDiv.querySelector('.delete-message-btn')) {
+    return;
+  }
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'delete-message-btn';
+  deleteBtn.innerHTML = '<span class="material-icons">close</span>';
+  deleteBtn.title = '刪除這條消息';
+  deleteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    deleteMessage(index);
+  });
+  messageDiv.appendChild(deleteBtn);
+  return deleteBtn;
+}
+
+async function deleteMessage(index) {
+  if (index < 0 || index >= conversationHistory.length) return;
+  
+  conversationHistory.splice(index, 1);
+  await saveConversationHistory();
+  renderHistory();
+}
+
+async function clearAllMessages() {
+  if (conversationHistory.length === 0) return;
+  
+  if (confirm('確定要清空所有對話嗎？')) {
+    conversationHistory = [];
+    messageElements.clear();
+    messagesContainer.innerHTML = '';
+    await saveConversationHistory();
+  }
+}
+
+function addMessage(content, role, messageDiv = null, index = null) {
   if (!messageDiv) {
     messageDiv = document.createElement('div');
     messageDiv.className = `message ${role}`;
+    
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = 'message-avatar';
+    const avatarIcon = document.createElement('span');
+    avatarIcon.className = 'material-icons';
+    avatarIcon.textContent = role === 'user' ? 'person' : 'smart_toy';
+    avatarDiv.appendChild(avatarIcon);
     
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
     contentDiv.textContent = content;
     
+    messageDiv.appendChild(avatarDiv);
     messageDiv.appendChild(contentDiv);
+    
+    if (index !== null) {
+      addDeleteButton(messageDiv, index);
+    }
+    
     messagesContainer.appendChild(messageDiv);
   } else {
     const contentDiv = messageDiv.querySelector('.message-content');
@@ -61,14 +142,17 @@ function showError(message) {
 async function sendMessage(message) {
   if (!message.trim()) return;
 
-  addMessage(message, 'user');
+  const userIndex = conversationHistory.length;
+  addMessage(message, 'user', null, userIndex);
   conversationHistory.push({ role: 'user', content: message });
+  await saveConversationHistory();
   
   messageInput.value = '';
   showLoading();
 
   const aiMessageDiv = addMessage('', 'ai');
   let aiMessageContent = '';
+  const aiIndex = conversationHistory.length;
 
   try {
     const apiUrl = await getApiUrl();
@@ -115,6 +199,9 @@ async function sendMessage(message) {
             }
             if (data.done) {
               conversationHistory.push({ role: 'assistant', content: aiMessageContent });
+              addDeleteButton(aiMessageDiv, aiIndex);
+              messageElements.set(aiIndex, { element: aiMessageDiv, data: { role: 'assistant', content: aiMessageContent } });
+              await saveConversationHistory();
               break;
             }
           } catch (e) {
@@ -129,6 +216,8 @@ async function sendMessage(message) {
     if (aiMessageDiv && aiMessageDiv.parentNode) {
       aiMessageDiv.remove();
     }
+    conversationHistory.pop();
+    await saveConversationHistory();
   } finally {
     hideLoading();
     messageInput.focus();
@@ -152,5 +241,10 @@ messageInput.addEventListener('keypress', (e) => {
   }
 });
 
+clearBtn.addEventListener('click', () => {
+  clearAllMessages();
+});
+
+loadConversationHistory();
 messageInput.focus();
 

@@ -11,12 +11,18 @@
   <div class="container">
     <div class="header">
       <h1>智伴 ZhiBan</h1>
+      <button id="clearBtn" class="clear-btn" title="清空對話">
+        <span class="material-icons">delete_outline</span>
+      </button>
     </div>
 
     <div class="chat-container">
       <div class="messages" id="messages"></div>
       <div class="loading" id="loading" style="display: none;">
-        <span class="material-icons">sync</span>
+        <div class="loading-avatar">
+          <span class="material-icons">smart_toy</span>
+        </div>
+        <span class="material-icons loading-spinner">sync</span>
         <span>AI 正在思考...</span>
       </div>
     </div>
