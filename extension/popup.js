@@ -60,7 +60,9 @@ function renderHistory() {
   messagesContainer.innerHTML = '';
   
   conversationHistory.forEach((msg) => {
-    addMessage(msg.content, msg.role);
+    if (msg && msg.content !== undefined && msg.role) {
+      addMessage(msg.content, msg.role);
+    }
   });
 }
 
@@ -144,6 +146,16 @@ function addMessage(content, role, messageDiv = null) {
       } else {
         messageDiv.appendChild(avatarDiv);
       }
+    } else {
+      const avatarIcon = avatarDiv.querySelector('.material-icons');
+      if (avatarIcon) {
+        avatarIcon.textContent = role === 'user' ? 'person' : 'smart_toy';
+      } else {
+        const newAvatarIcon = document.createElement('span');
+        newAvatarIcon.className = 'material-icons';
+        newAvatarIcon.textContent = role === 'user' ? 'person' : 'smart_toy';
+        avatarDiv.appendChild(newAvatarIcon);
+      }
     }
     
     let contentDiv = messageDiv.querySelector('.message-content');
@@ -153,6 +165,10 @@ function addMessage(content, role, messageDiv = null) {
       messageDiv.appendChild(contentDiv);
     }
     contentDiv.textContent = content;
+    
+    if (!messageDiv.className.includes(role)) {
+      messageDiv.className = `message ${role}`;
+    }
   }
   
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
