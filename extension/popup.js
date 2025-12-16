@@ -158,7 +158,7 @@ function renderHistory() {
           avatarDiv.className = 'message-avatar';
           const avatarIcon = document.createElement('span');
           avatarIcon.className = 'material-icons';
-          avatarIcon.textContent = role === 'user' ? 'person' : 'smart_toy';
+          avatarIcon.textContent = role === 'user' ? 'person' : 'auto_awesome';
           avatarDiv.appendChild(avatarIcon);
           const contentDiv = messageDiv.querySelector('.message-content');
           if (contentDiv) {
@@ -234,7 +234,7 @@ function addMessage(content, role, messageDiv = null) {
       avatarDiv.className = 'message-avatar';
       const avatarIcon = document.createElement('span');
       avatarIcon.className = 'material-icons';
-      avatarIcon.textContent = 'smart_toy';
+      avatarIcon.textContent = 'auto_awesome';
       avatarDiv.appendChild(avatarIcon);
       messageDiv.appendChild(avatarDiv);
     }
