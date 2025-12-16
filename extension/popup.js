@@ -488,16 +488,6 @@ startChatBtn.addEventListener('click', async () => {
   }, 100);
 });
 
-document.querySelectorAll('.quick-question-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const question = btn.getAttribute('data-question');
-    if (question) {
-      messageInput.value = question;
-      adjustTextareaHeight();
-      sendMessage(question);
-    }
-  });
-});
 
 loadConversationHistory();
 
