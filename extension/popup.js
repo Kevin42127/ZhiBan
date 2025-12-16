@@ -262,7 +262,7 @@ function addMessage(content, role, messageDiv = null) {
       avatarDiv.className = 'message-avatar';
       const avatarIcon = document.createElement('span');
       avatarIcon.className = 'material-icons';
-      avatarIcon.textContent = role === 'user' ? 'person' : 'smart_toy';
+      avatarIcon.textContent = role === 'user' ? 'person' : 'auto_awesome';
       avatarDiv.appendChild(avatarIcon);
       const contentDiv = messageDiv.querySelector('.message-content');
       if (contentDiv) {
@@ -281,11 +281,11 @@ function addMessage(content, role, messageDiv = null) {
     } else {
       const avatarIcon = avatarDiv.querySelector('.material-icons');
       if (avatarIcon) {
-        avatarIcon.textContent = role === 'user' ? 'person' : 'smart_toy';
+        avatarIcon.textContent = role === 'user' ? 'person' : 'auto_awesome';
       } else {
         const newAvatarIcon = document.createElement('span');
         newAvatarIcon.className = 'material-icons';
-        newAvatarIcon.textContent = role === 'user' ? 'person' : 'smart_toy';
+        newAvatarIcon.textContent = role === 'user' ? 'person' : 'auto_awesome';
         avatarDiv.appendChild(newAvatarIcon);
       }
     }
