@@ -94,20 +94,33 @@ async function loadConversationHistory() {
     if (result[STORAGE_KEY] && Array.isArray(result[STORAGE_KEY]) && result[STORAGE_KEY].length > 0) {
       conversationHistory = result[STORAGE_KEY];
       renderHistory();
+    } else {
+      conversationHistory = [];
+      showEmptyState();
     }
   } catch (error) {
     console.error('Failed to load conversation history:', error);
+    conversationHistory = [];
+    showEmptyState();
   }
 }
 
 function showEmptyState() {
-  emptyState.style.display = 'flex';
-  messagesContainer.style.display = 'none';
+  if (emptyState) {
+    emptyState.style.display = 'flex';
+  }
+  if (messagesContainer) {
+    messagesContainer.style.display = 'none';
+  }
 }
 
 function hideEmptyState() {
-  emptyState.style.display = 'none';
-  messagesContainer.style.display = 'flex';
+  if (emptyState) {
+    emptyState.style.display = 'none';
+  }
+  if (messagesContainer) {
+    messagesContainer.style.display = 'flex';
+  }
 }
 
 function renderHistory() {
