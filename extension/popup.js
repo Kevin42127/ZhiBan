@@ -13,18 +13,26 @@ async function getApiUrl() {
   return result.apiUrl || API_BASE_URL;
 }
 
-function addMessage(content, role) {
-  const messageDiv = document.createElement('div');
-  messageDiv.className = `message ${role}`;
-  
-  const contentDiv = document.createElement('div');
-  contentDiv.className = 'message-content';
-  contentDiv.textContent = content;
-  
-  messageDiv.appendChild(contentDiv);
-  messagesContainer.appendChild(messageDiv);
+function addMessage(content, role, messageDiv = null) {
+  if (!messageDiv) {
+    messageDiv = document.createElement('div');
+    messageDiv.className = `message ${role}`;
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    contentDiv.textContent = content;
+    
+    messageDiv.appendChild(contentDiv);
+    messagesContainer.appendChild(messageDiv);
+  } else {
+    const contentDiv = messageDiv.querySelector('.message-content');
+    if (contentDiv) {
+      contentDiv.textContent = content;
+    }
+  }
   
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  return messageDiv;
 }
 
 function showLoading() {
@@ -60,6 +68,9 @@ async function sendMessage(message) {
   messageInput.value = '';
   showLoading();
 
+  const aiMessageDiv = addMessage('', 'ai');
+  let aiMessageContent = '';
+
   try {
     const apiUrl = await getApiUrl();
     
@@ -75,18 +86,50 @@ async function sendMessage(message) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorText = await response.text();
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { error: errorText || '請求失敗' };
+      }
       throw new Error(errorData.error || '請求失敗');
     }
 
-    const data = await response.json();
-    const aiMessage = data.message || '無法取得回應';
-    
-    addMessage(aiMessage, 'ai');
-    conversationHistory.push({ role: 'assistant', content: aiMessage });
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.content) {
+              aiMessageContent += data.content;
+              addMessage(aiMessageContent, 'ai', aiMessageDiv);
+            }
+            if (data.done) {
+              conversationHistory.push({ role: 'assistant', content: aiMessageContent });
+              break;
+            }
+          } catch (e) {
+            console.error('Parse error:', e);
+          }
+        }
+      }
+    }
   } catch (error) {
     console.error('Error:', error);
     showError(`錯誤: ${error.message}`);
+    if (aiMessageDiv && aiMessageDiv.parentNode) {
+      aiMessageDiv.remove();
+    }
   } finally {
     hideLoading();
     messageInput.focus();
