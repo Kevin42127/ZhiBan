@@ -278,7 +278,6 @@ body {
 
 .message {
   display: flex;
-  animation: fadeIn 0.3s ease-out;
   position: relative;
 }
 
@@ -399,7 +398,6 @@ body {
 }
 
 .loading-spinner {
-  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
