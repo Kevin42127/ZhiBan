@@ -4,11 +4,10 @@
   "version": "1.0.0",
   "description": "智能陪伴聊天助理",
   "permissions": [
-    "activeTab",
     "storage"
   ],
   "host_permissions": [
-    "https://*/*"
+    "https://zhiban.vercel.app/*"
   ],
   "action": {
     "default_popup": "popup.html",
