@@ -43,10 +43,16 @@ export default async function handler(req, res) {
 
     const messages = [
       systemPrompt,
-      ...(Array.isArray(history) ? history.map(msg => ({
-        role: msg.role || 'user',
-        content: msg.content || ''
-      })) : []),
+      ...(Array.isArray(history) ? history.map(msg => {
+        let role = msg.role || 'user';
+        if (role === 'ai') {
+          role = 'assistant';
+        }
+        return {
+          role: role,
+          content: msg.content || ''
+        };
+      }) : []),
       {
         role: 'user',
         content: message
