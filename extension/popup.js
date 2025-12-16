@@ -1,5 +1,6 @@
 const API_BASE_URL = 'https://zhiban.vercel.app/api/chat';
 const STORAGE_KEY = 'zhiban_conversation_history';
+const WELCOME_SHOWN_KEY = 'zhiban_welcome_shown';
 const MAX_VISIBLE_MESSAGES = 50;
 
 let conversationHistory = [];
@@ -16,6 +17,9 @@ const confirmDialogTitle = document.getElementById('confirmDialogTitle');
 const confirmDialogMessage = document.getElementById('confirmDialogMessage');
 const confirmDialogConfirm = document.getElementById('confirmDialogConfirm');
 const confirmDialogCancel = document.getElementById('confirmDialogCancel');
+const welcomePage = document.getElementById('welcomePage');
+const chatContainer = document.getElementById('chatContainer');
+const startChatBtn = document.getElementById('startChatBtn');
 
 async function getApiUrl() {
   const result = await chrome.storage.sync.get(['apiUrl']);
@@ -44,8 +48,45 @@ function removeWelcomeMessage() {
   }
 }
 
+async function checkWelcomeShown() {
+  try {
+    const result = await chrome.storage.local.get([WELCOME_SHOWN_KEY]);
+    return result[WELCOME_SHOWN_KEY] === true;
+  } catch (error) {
+    console.error('Failed to check welcome shown:', error);
+    return false;
+  }
+}
+
+async function markWelcomeShown() {
+  try {
+    await chrome.storage.local.set({ [WELCOME_SHOWN_KEY]: true });
+  } catch (error) {
+    console.error('Failed to mark welcome as shown:', error);
+  }
+}
+
+function showWelcomePage() {
+  welcomePage.style.display = 'flex';
+  chatContainer.style.display = 'none';
+  document.querySelector('.input-container').style.display = 'none';
+}
+
+function hideWelcomePage() {
+  welcomePage.style.display = 'none';
+  chatContainer.style.display = 'flex';
+  document.querySelector('.input-container').style.display = 'flex';
+}
+
 async function loadConversationHistory() {
   try {
+    const welcomeShown = await checkWelcomeShown();
+    
+    if (!welcomeShown) {
+      showWelcomePage();
+      return;
+    }
+    
     const result = await chrome.storage.local.get([STORAGE_KEY]);
     if (result[STORAGE_KEY] && Array.isArray(result[STORAGE_KEY]) && result[STORAGE_KEY].length > 0) {
       conversationHistory = result[STORAGE_KEY];
@@ -288,6 +329,12 @@ function showError(message) {
 async function sendMessage(message) {
   if (!message.trim()) return;
 
+  const welcomeShown = await checkWelcomeShown();
+  if (!welcomeShown) {
+    await markWelcomeShown();
+    hideWelcomePage();
+  }
+
   removeWelcomeMessage();
 
   addMessage(message, 'user');
@@ -404,6 +451,14 @@ clearBtn.addEventListener('click', () => {
   clearAllMessages();
 });
 
+startChatBtn.addEventListener('click', async () => {
+  await markWelcomeShown();
+  hideWelcomePage();
+  loadConversationHistory();
+  setTimeout(() => {
+    messageInput.focus();
+  }, 100);
+});
+
 loadConversationHistory();
-messageInput.focus();
 
