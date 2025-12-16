@@ -1,4 +1,4 @@
-const API_BASE_URL = 'YOUR_VERCEL_API_URL/api/chat';
+const API_BASE_URL = 'https://zhiban.vercel.app/api/chat';
 
 let conversationHistory = [];
 
