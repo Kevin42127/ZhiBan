@@ -362,13 +362,35 @@ function detectLanguage(text) {
 function showError(message) {
   const errorDiv = document.createElement('div');
   errorDiv.className = 'error-message';
-  errorDiv.textContent = message;
+  
+  const lines = message.split('\n');
+  lines.forEach((line, index) => {
+    if (line.trim()) {
+      const lineDiv = document.createElement('div');
+      if (line.startsWith('💡') || line.startsWith('⏱️')) {
+        lineDiv.className = 'error-line-icon';
+      } else if (line.startsWith('•')) {
+        lineDiv.className = 'error-line-item';
+      } else if (index === 0) {
+        lineDiv.className = 'error-line-title';
+      } else {
+        lineDiv.className = 'error-line';
+      }
+      lineDiv.textContent = line;
+      errorDiv.appendChild(lineDiv);
+    } else {
+      const spacer = document.createElement('div');
+      spacer.className = 'error-spacer';
+      errorDiv.appendChild(spacer);
+    }
+  });
+  
   messagesContainer.appendChild(errorDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
   
   setTimeout(() => {
     errorDiv.remove();
-  }, 5000);
+  }, 10000);
 }
 
 async function sendMessage(message) {
@@ -411,7 +433,21 @@ async function sendMessage(message) {
       } catch {
         errorData = { error: errorText || '請求失敗' };
       }
-      throw new Error(errorData.error || '請求失敗');
+      
+      if (response.status === 429) {
+        const retryAfter = errorData.retryAfter || 60;
+        const minutes = Math.floor(retryAfter / 60);
+        const seconds = retryAfter % 60;
+        let timeText = '';
+        if (minutes > 0) {
+          timeText = `${minutes} 分 ${seconds} 秒`;
+        } else {
+          timeText = `${seconds} 秒`;
+        }
+        throw new Error(`請求過於頻繁\n\n${errorData.message || '請稍後再試'}\n\n⏱️ ${timeText} 後可重試\n\n💡 使用限制：\n• 每 10 秒：最多 3 次\n• 每分鐘：最多 20 次\n• 每小時：最多 150 次\n• 每天：最多 2000 次`);
+      }
+      
+      throw new Error(errorData.error || errorData.message || '請求失敗');
     }
 
     const reader = response.body.getReader();

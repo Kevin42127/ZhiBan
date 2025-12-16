@@ -1,5 +1,106 @@
 import { Groq } from 'groq-sdk';
 
+const rateLimitStore = new Map();
+
+const RATE_LIMITS = {
+  per10Seconds: 3,
+  perMinute: 20,
+  per5Minutes: 50,
+  perHour: 150,
+  perDay: 2000,
+  minInterval: 2000
+};
+
+function getClientId(req) {
+  const clientApiKey = req.headers['x-api-key'] || req.body?.apiKey;
+  return clientApiKey || req.headers['x-forwarded-for'] || 'unknown';
+}
+
+function checkRateLimit(clientId) {
+  const now = Date.now();
+  const key = `rate_limit_${clientId}`;
+  
+  if (!rateLimitStore.has(key)) {
+    rateLimitStore.set(key, {
+      requests: [],
+      lastRequest: 0
+    });
+  }
+  
+  const record = rateLimitStore.get(key);
+  const requests = record.requests.filter(time => now - time < 86400000);
+  record.requests = requests;
+  
+  const recent10s = requests.filter(time => now - time < 10000).length;
+  const recent1m = requests.filter(time => now - time < 60000).length;
+  const recent5m = requests.filter(time => now - time < 300000).length;
+  const recent1h = requests.filter(time => now - time < 3600000).length;
+  const recent24h = requests.length;
+  
+  if (now - record.lastRequest < RATE_LIMITS.minInterval) {
+    return {
+      allowed: false,
+      reason: '請求過於頻繁，請稍後再試',
+      retryAfter: Math.ceil((RATE_LIMITS.minInterval - (now - record.lastRequest)) / 1000)
+    };
+  }
+  
+  if (recent10s >= RATE_LIMITS.per10Seconds) {
+    const oldest = Math.min(...requests.filter(time => now - time < 10000));
+    return {
+      allowed: false,
+      reason: '請求過於頻繁，請稍後再試',
+      retryAfter: Math.ceil((10000 - (now - oldest)) / 1000)
+    };
+  }
+  
+  if (recent1m >= RATE_LIMITS.perMinute) {
+    const oldest = Math.min(...requests.filter(time => now - time < 60000));
+    return {
+      allowed: false,
+      reason: '每分鐘請求次數過多，請稍後再試',
+      retryAfter: Math.ceil((60000 - (now - oldest)) / 1000)
+    };
+  }
+  
+  if (recent5m >= RATE_LIMITS.per5Minutes) {
+    const oldest = Math.min(...requests.filter(time => now - time < 300000));
+    return {
+      allowed: false,
+      reason: '短期內請求次數過多，請稍後再試',
+      retryAfter: Math.ceil((300000 - (now - oldest)) / 1000)
+    };
+  }
+  
+  if (recent1h >= RATE_LIMITS.perHour) {
+    const oldest = Math.min(...requests.filter(time => now - time < 3600000));
+    return {
+      allowed: false,
+      reason: '每小時請求次數過多，請稍後再試',
+      retryAfter: Math.ceil((3600000 - (now - oldest)) / 1000)
+    };
+  }
+  
+  if (recent24h >= RATE_LIMITS.perDay) {
+    const oldest = Math.min(...requests);
+    return {
+      allowed: false,
+      reason: '每日請求次數已達上限，請明天再試',
+      retryAfter: Math.ceil((86400000 - (now - oldest)) / 1000)
+    };
+  }
+  
+  record.requests.push(now);
+  record.lastRequest = now;
+  
+  if (rateLimitStore.size > 10000) {
+    const oldestKey = Array.from(rateLimitStore.keys())[0];
+    rateLimitStore.delete(oldestKey);
+  }
+  
+  return { allowed: true };
+}
+
 export default async function handler(req, res) {
   try {
     if (req.method === 'OPTIONS') {
@@ -23,6 +124,21 @@ export default async function handler(req, res) {
 
     if (!clientApiKey || clientApiKey !== serverApiKey) {
       return res.status(401).json({ error: 'Unauthorized: Invalid API key' });
+    }
+
+    const clientId = getClientId(req);
+    const rateLimitCheck = checkRateLimit(clientId);
+    
+    if (!rateLimitCheck.allowed) {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+      res.setHeader('Retry-After', rateLimitCheck.retryAfter || 60);
+      return res.status(429).json({
+        error: 'Rate limit exceeded',
+        message: rateLimitCheck.reason,
+        retryAfter: rateLimitCheck.retryAfter
+      });
     }
 
     const { message, history = [], language = 'zh-TW' } = req.body || {};

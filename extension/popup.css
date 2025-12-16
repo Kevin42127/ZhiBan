@@ -371,6 +371,35 @@ body {
   margin: 8px 20px;
   font-size: 13px;
   border-left: 4px solid #ffc107;
+  white-space: pre-line;
+  line-height: 1.6;
+}
+
+.error-line-title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.error-line {
+  font-size: 14px;
+  margin: 2px 0;
+}
+
+.error-line-icon {
+  font-size: 14px;
+  margin: 4px 0;
+  font-weight: 500;
+}
+
+.error-line-item {
+  font-size: 13px;
+  margin: 2px 0 2px 16px;
+  color: #666;
+}
+
+.error-spacer {
+  height: 4px;
 }
 
 .confirm-dialog-overlay {
