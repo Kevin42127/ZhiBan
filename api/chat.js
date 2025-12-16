@@ -31,9 +31,9 @@ export default async function handler(req, res) {
 
     let systemPromptContent = '';
     if (language === 'zh-TW') {
-      systemPromptContent = '請使用繁體中文以自然、口語化的方式回應。用親切友善的語氣，就像朋友之間的對話一樣。回應要流暢自然，可以使用適當的標點符號和段落來讓內容更易讀。';
+      systemPromptContent = '請使用繁體中文以自然、口語化的方式回應。用親切友善的語氣，就像朋友之間的對話一樣。回應要流暢自然，可以使用適當的標點符號和段落來讓內容更易讀。請使用純文字格式，不要使用項目符號（*、-、1. 等）、Markdown 格式、粗體、斜體或其他格式化符號。';
     } else {
-      systemPromptContent = 'Please respond in English in a natural, conversational way. Use a friendly and approachable tone, like talking to a friend. Make your responses fluent and natural, and feel free to use appropriate punctuation and paragraphs to make the content more readable.';
+      systemPromptContent = 'Please respond in English in a natural, conversational way. Use a friendly and approachable tone, like talking to a friend. Make your responses fluent and natural, and feel free to use appropriate punctuation and paragraphs to make the content more readable. Use plain text format only, do not use bullet points (*, -, 1. etc.), Markdown formatting, bold, italic, or any other formatting symbols.';
     }
 
     const systemPrompt = {
