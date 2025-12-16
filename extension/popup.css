@@ -328,13 +328,20 @@ body {
   display: inline-block;
   padding: 10px 12px;
   border-radius: 16px;
-  line-height: 1.35;
+  line-height: 1.6;
   font-size: 15px;
   max-width: 70%;
   min-width: 0;
-  white-space: pre-wrap;
   word-break: break-word;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) inset;
+}
+
+.message-content p {
+  margin: 0 0 12px 0;
+}
+
+.message-content p:last-child {
+  margin-bottom: 0;
 }
 
 @keyframes messageAppear {

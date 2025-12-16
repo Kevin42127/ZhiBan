@@ -241,7 +241,8 @@ function addMessage(content, role, messageDiv = null) {
     
     const contentDiv = document.createElement('div');
     contentDiv.className = 'message-content';
-    contentDiv.textContent = content;
+    const formattedContent = formatTextContent(content);
+    contentDiv.innerHTML = formattedContent;
     messageDiv.appendChild(contentDiv);
     
     if (role === 'user') {
@@ -301,7 +302,8 @@ function addMessage(content, role, messageDiv = null) {
         messageDiv.appendChild(contentDiv);
       }
     }
-    contentDiv.textContent = content;
+    const formattedContent = formatTextContent(content);
+    contentDiv.innerHTML = formattedContent;
     
     if (!messageDiv.className.includes(role)) {
       messageDiv.className = `message ${role}`;
@@ -310,6 +312,17 @@ function addMessage(content, role, messageDiv = null) {
   
   scrollToBottom();
   return messageDiv;
+}
+
+function formatTextContent(text) {
+  if (!text) return '';
+  
+  return text
+    .split('\n\n')
+    .map(paragraph => paragraph.trim())
+    .filter(paragraph => paragraph.length > 0)
+    .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+    .join('');
 }
 
 function scrollToBottom() {
