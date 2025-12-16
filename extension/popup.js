@@ -93,12 +93,9 @@ async function loadConversationHistory() {
     if (result[STORAGE_KEY] && Array.isArray(result[STORAGE_KEY]) && result[STORAGE_KEY].length > 0) {
       conversationHistory = result[STORAGE_KEY];
       renderHistory();
-    } else {
-      showWelcomeMessage();
     }
   } catch (error) {
     console.error('Failed to load conversation history:', error);
-    showWelcomeMessage();
   }
 }
 
@@ -336,8 +333,6 @@ async function sendMessage(message) {
     await markWelcomeShown();
     hideWelcomePage();
   }
-
-  removeWelcomeMessage();
 
   addMessage(message, 'user');
   conversationHistory.push({ role: 'user', content: message });
