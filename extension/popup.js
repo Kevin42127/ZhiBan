@@ -28,15 +28,32 @@ async function saveConversationHistory() {
   }
 }
 
+function showWelcomeMessage() {
+  const welcomeText = '你好，我可以幫你什麼忙？';
+  const welcomeDiv = addMessage(welcomeText, 'ai');
+  welcomeDiv.classList.add('welcome-message');
+  welcomeDiv.setAttribute('data-welcome', 'true');
+}
+
+function removeWelcomeMessage() {
+  const welcomeMsg = messagesContainer.querySelector('.welcome-message');
+  if (welcomeMsg) {
+    welcomeMsg.remove();
+  }
+}
+
 async function loadConversationHistory() {
   try {
     const result = await chrome.storage.local.get([STORAGE_KEY]);
-    if (result[STORAGE_KEY] && Array.isArray(result[STORAGE_KEY])) {
+    if (result[STORAGE_KEY] && Array.isArray(result[STORAGE_KEY]) && result[STORAGE_KEY].length > 0) {
       conversationHistory = result[STORAGE_KEY];
       renderHistory();
+    } else {
+      showWelcomeMessage();
     }
   } catch (error) {
     console.error('Failed to load conversation history:', error);
+    showWelcomeMessage();
   }
 }
 
@@ -120,6 +137,7 @@ async function clearAllMessages() {
     messageElements.clear();
     messagesContainer.innerHTML = '';
     await saveConversationHistory();
+    showWelcomeMessage();
   }
 }
 
@@ -141,6 +159,10 @@ function addMessage(content, role, messageDiv = null, index = null) {
     
     messageDiv.appendChild(avatarDiv);
     messageDiv.appendChild(contentDiv);
+    
+    if (index !== null) {
+      addDeleteButton(messageDiv, index);
+    }
     
     messagesContainer.appendChild(messageDiv);
   } else {
@@ -188,6 +210,8 @@ function showError(message) {
 
 async function sendMessage(message) {
   if (!message.trim()) return;
+
+  removeWelcomeMessage();
 
   const userIndex = conversationHistory.length;
   addMessage(message, 'user', null, userIndex);
