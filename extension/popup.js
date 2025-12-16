@@ -130,10 +130,29 @@ function addMessage(content, role, messageDiv = null) {
     
     messagesContainer.appendChild(messageDiv);
   } else {
-    const contentDiv = messageDiv.querySelector('.message-content');
-    if (contentDiv) {
-      contentDiv.textContent = content;
+    let avatarDiv = messageDiv.querySelector('.message-avatar');
+    if (!avatarDiv) {
+      avatarDiv = document.createElement('div');
+      avatarDiv.className = 'message-avatar';
+      const avatarIcon = document.createElement('span');
+      avatarIcon.className = 'material-icons';
+      avatarIcon.textContent = role === 'user' ? 'person' : 'smart_toy';
+      avatarDiv.appendChild(avatarIcon);
+      const contentDiv = messageDiv.querySelector('.message-content');
+      if (contentDiv) {
+        messageDiv.insertBefore(avatarDiv, contentDiv);
+      } else {
+        messageDiv.appendChild(avatarDiv);
+      }
     }
+    
+    let contentDiv = messageDiv.querySelector('.message-content');
+    if (!contentDiv) {
+      contentDiv = document.createElement('div');
+      contentDiv.className = 'message-content';
+      messageDiv.appendChild(contentDiv);
+    }
+    contentDiv.textContent = content;
   }
   
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
