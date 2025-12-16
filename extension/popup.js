@@ -1,6 +1,7 @@
 const API_BASE_URL = 'https://zhiban.vercel.app/api/chat';
 const STORAGE_KEY = 'zhiban_conversation_history';
 const MAX_VISIBLE_MESSAGES = 50;
+const MAX_HISTORY_MESSAGES = 20;
 const CLIENT_API_KEY = 'mq2Egl$@~]DRQ^}5#6rX;8t^-PG0Tr]G)A7%kgHgojz]pMngTB';
 
 let conversationHistory = [];
@@ -353,10 +354,62 @@ function hideLoading() {
 
 function detectLanguage(text) {
   const chineseRegex = /[\u4e00-\u9fff]/;
+  const englishRegex = /[a-zA-Z]/;
+  
   if (chineseRegex.test(text)) {
     return 'zh-TW';
   }
-  return 'en';
+  
+  if (englishRegex.test(text)) {
+    return 'en';
+  }
+  
+  return null;
+}
+
+function detectLanguageFromHistory(history) {
+  if (!history || history.length === 0) {
+    return null;
+  }
+  
+  const chineseRegex = /[\u4e00-\u9fff]/;
+  const englishRegex = /[a-zA-Z]/;
+  
+  let chineseCount = 0;
+  let englishCount = 0;
+  
+  for (const msg of history) {
+    const content = msg.content || '';
+    if (chineseRegex.test(content)) {
+      chineseCount++;
+    } else if (englishRegex.test(content)) {
+      englishCount++;
+    }
+  }
+  
+  if (chineseCount > englishCount) {
+    return 'zh-TW';
+  } else if (englishCount > chineseCount) {
+    return 'en';
+  }
+  
+  return null;
+}
+
+function getLanguageForMessage(message, history) {
+  const detectedLanguage = detectLanguage(message);
+  
+  if (detectedLanguage) {
+    return detectedLanguage;
+  }
+  
+  const historyLanguage = detectLanguageFromHistory(history);
+  
+  if (historyLanguage) {
+    return historyLanguage;
+  }
+  
+  return 'zh-TW';
 }
 
 function showError(message) {
@@ -410,7 +463,9 @@ async function sendMessage(message) {
 
   try {
     const apiUrl = await getApiUrl();
-    const detectedLanguage = detectLanguage(message);
+    const currentHistory = conversationHistory.slice(0, -1);
+    const limitedHistory = currentHistory.slice(-MAX_HISTORY_MESSAGES);
+    const language = getLanguageForMessage(message, limitedHistory);
     
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -420,8 +475,8 @@ async function sendMessage(message) {
       },
       body: JSON.stringify({
         message: message,
-        history: conversationHistory.slice(0, -1),
-        language: detectedLanguage
+        history: limitedHistory,
+        language: language
       }),
     });
 
