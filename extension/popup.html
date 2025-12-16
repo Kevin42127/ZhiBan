@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智伴 ZhiBan</title>
+  <link rel="stylesheet" href="popup.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>智伴 ZhiBan</h1>
+    </div>
+    
+    <div class="quick-actions">
+      <h2>快捷指令</h2>
+      <div class="actions-grid">
+        <button class="action-btn" data-prompt="總結此內容">
+          <span class="material-icons">summarize</span>
+          <span>總結</span>
+        </button>
+        <button class="action-btn" data-prompt="翻譯成英文">
+          <span class="material-icons">translate</span>
+          <span>翻譯</span>
+        </button>
+        <button class="action-btn" data-prompt="解釋這個概念">
+          <span class="material-icons">help_outline</span>
+          <span>解釋</span>
+        </button>
+        <button class="action-btn" data-prompt="列出重點">
+          <span class="material-icons">list</span>
+          <span>重點</span>
+        </button>
+        <button class="action-btn" data-prompt="改寫這段文字">
+          <span class="material-icons">edit</span>
+          <span>改寫</span>
+        </button>
+        <button class="action-btn" data-prompt="提供建議">
+          <span class="material-icons">lightbulb</span>
+          <span>建議</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="chat-container">
+      <div class="messages" id="messages"></div>
+      <div class="loading" id="loading" style="display: none;">
+        <span class="material-icons">sync</span>
+        <span>AI 正在思考...</span>
+      </div>
+    </div>
+
+    <div class="input-container">
+      <input 
+        type="text" 
+        id="messageInput" 
+        placeholder="輸入訊息..."
+        autocomplete="off"
+      >
+      <button id="sendBtn" class="send-btn">
+        <span class="material-icons">send</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+

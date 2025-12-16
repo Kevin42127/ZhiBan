@@ -1,15 +1,8 @@
-const Groq = require('groq-sdk');
-
-function setCorsHeaders(res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-}
-
-module.exports = async function handler(req, res) {
-  setCorsHeaders(res);
-
+export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     return res.status(200).end();
   }
 
@@ -17,53 +10,69 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { message } = req.body || {};
+  const { message, history = [] } = req.body;
 
   if (!message || typeof message !== 'string') {
     return res.status(400).json({ error: 'Message is required' });
   }
 
-  const groqApiKey = process.env.GROQ_API_KEY;
-  if (!groqApiKey) {
-    return res.status(500).json({ error: 'GROQ API key not configured' });
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'API key not configured' });
   }
 
   try {
-    const groq = new Groq({
-      apiKey: groqApiKey,
+    const messages = [
+      ...history.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      })),
+      {
+        role: 'user',
+        content: message
+      }
+    ];
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.1-70b-versatile',
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 2048,
+      }),
     });
 
-    const completion = await groq.chat.completions.create({
-      messages: [
-        {
-          role: 'system',
-          content: '你是一個友善且專業的 AI 助理，請用繁體中文回答問題。',
-        },
-        {
-          role: 'user',
-          content: message,
-        },
-      ],
-      model: 'openai/gpt-oss-120b',
-      temperature: 1,
-      max_completion_tokens: 2048,
-      top_p: 1,
-      stream: false,
-      reasoning_effort: 'medium',
-      stop: null,
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Groq API error:', errorData);
+      return res.status(response.status).json({ 
+        error: 'Failed to get response from AI',
+        details: errorData 
+      });
+    }
+
+    const data = await response.json();
+    const aiMessage = data.choices[0]?.message?.content || '無法取得回應';
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    return res.status(200).json({ 
+      message: aiMessage,
+      usage: data.usage 
     });
-
-    const aiResponse =
-      (completion.choices &&
-        completion.choices[0] &&
-        completion.choices[0].message &&
-        completion.choices[0].message.content) ||
-      '無法取得回應';
-
-    return res.status(200).json({ response: aiResponse });
   } catch (error) {
-    console.error('Error calling GROQ API:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('Error calling Groq API:', error);
+    return res.status(500).json({ 
+      error: 'Internal server error',
+      details: error.message 
+    });
   }
-};
+}
 
