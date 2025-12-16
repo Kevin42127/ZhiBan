@@ -1,0 +1,13 @@
+{
+  "name": "zhiban",
+  "version": "1.0.0",
+  "description": "智伴 ZhiBan Chrome 擴充功能後端",
+  "type": "module",
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {
+    "groq-sdk": "^0.7.0"
+  }
+}
+
