@@ -2,7 +2,6 @@ const API_BASE_URL = 'https://zhiban.vercel.app/api/chat';
 const STORAGE_KEY = 'zhiban_conversation_history';
 
 let conversationHistory = [];
-let messageElements = new Map();
 
 const messagesContainer = document.getElementById('messages');
 const messageInput = document.getElementById('messageInput');
@@ -59,39 +58,10 @@ async function loadConversationHistory() {
 
 function renderHistory() {
   messagesContainer.innerHTML = '';
-  messageElements.clear();
   
-  conversationHistory.forEach((msg, index) => {
-    const messageDiv = addMessage(msg.content, msg.role, null, index);
-    messageElements.set(index, { element: messageDiv, data: msg });
+  conversationHistory.forEach((msg) => {
+    addMessage(msg.content, msg.role);
   });
-}
-
-function addDeleteButton(messageDiv, index) {
-  if (messageDiv.querySelector('.delete-message-btn')) {
-    return;
-  }
-  const deleteBtn = document.createElement('button');
-  deleteBtn.className = 'delete-message-btn';
-  deleteBtn.innerHTML = '<span class="material-icons">close</span>';
-  deleteBtn.title = '刪除這條消息';
-  deleteBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    deleteMessage(index);
-  });
-  messageDiv.appendChild(deleteBtn);
-  return deleteBtn;
-}
-
-async function deleteMessage(index) {
-  if (index < 0 || index >= conversationHistory.length) return;
-  
-  const confirmed = await showConfirmDialog('確認刪除', '確定要刪除這條消息嗎？');
-  if (confirmed) {
-    conversationHistory.splice(index, 1);
-    await saveConversationHistory();
-    renderHistory();
-  }
 }
 
 function showConfirmDialog(title, message) {
@@ -134,13 +104,12 @@ async function clearAllMessages() {
   const confirmed = await showConfirmDialog('確認清空', '確定要清空所有對話嗎？');
   if (confirmed) {
     conversationHistory = [];
-    messageElements.clear();
     messagesContainer.innerHTML = '';
     await saveConversationHistory();
   }
 }
 
-function addMessage(content, role, messageDiv = null, index = null) {
+function addMessage(content, role, messageDiv = null) {
   if (!messageDiv) {
     messageDiv = document.createElement('div');
     messageDiv.className = `message ${role}`;
@@ -158,10 +127,6 @@ function addMessage(content, role, messageDiv = null, index = null) {
     
     messageDiv.appendChild(avatarDiv);
     messageDiv.appendChild(contentDiv);
-    
-    if (index !== null) {
-      addDeleteButton(messageDiv, index);
-    }
     
     messagesContainer.appendChild(messageDiv);
   } else {
@@ -212,8 +177,7 @@ async function sendMessage(message) {
 
   removeWelcomeMessage();
 
-  const userIndex = conversationHistory.length;
-  addMessage(message, 'user', null, userIndex);
+  addMessage(message, 'user');
   conversationHistory.push({ role: 'user', content: message });
   await saveConversationHistory();
   
@@ -222,7 +186,6 @@ async function sendMessage(message) {
 
   const aiMessageDiv = addMessage('', 'ai');
   let aiMessageContent = '';
-  const aiIndex = conversationHistory.length;
 
   try {
     const apiUrl = await getApiUrl();
@@ -271,8 +234,6 @@ async function sendMessage(message) {
             }
             if (data.done) {
               conversationHistory.push({ role: 'assistant', content: aiMessageContent });
-              addDeleteButton(aiMessageDiv, aiIndex);
-              messageElements.set(aiIndex, { element: aiMessageDiv, data: { role: 'assistant', content: aiMessageContent } });
               await saveConversationHistory();
               break;
             }

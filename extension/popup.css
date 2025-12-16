@@ -85,44 +85,6 @@ body {
   align-items: flex-start;
 }
 
-.delete-message-btn {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: #dc3545;
-  border: 2px solid white;
-  color: white;
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: all 0.2s;
-  z-index: 10;
-}
-
-.delete-message-btn .material-icons {
-  font-size: 14px;
-}
-
-.message:hover .delete-message-btn {
-  display: flex;
-  opacity: 1;
-}
-
-.delete-message-btn:hover {
-  background: #c82333;
-  transform: scale(1.1);
-}
-
-.message.user .delete-message-btn {
-  right: auto;
-  left: -8px;
-}
-
 .message-avatar {
   width: 32px;
   height: 32px;
