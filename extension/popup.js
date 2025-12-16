@@ -137,7 +137,6 @@ async function clearAllMessages() {
     messageElements.clear();
     messagesContainer.innerHTML = '';
     await saveConversationHistory();
-    showWelcomeMessage();
   }
 }
 
