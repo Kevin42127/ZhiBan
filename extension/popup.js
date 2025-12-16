@@ -70,12 +70,14 @@ function showWelcomePage() {
   welcomePage.style.display = 'flex';
   chatContainer.style.display = 'none';
   document.querySelector('.input-container').style.display = 'none';
+  document.querySelector('.header').style.display = 'none';
 }
 
 function hideWelcomePage() {
   welcomePage.style.display = 'none';
   chatContainer.style.display = 'flex';
   document.querySelector('.input-container').style.display = 'flex';
+  document.querySelector('.header').style.display = 'flex';
 }
 
 async function loadConversationHistory() {
