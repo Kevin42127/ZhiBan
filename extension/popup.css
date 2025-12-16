@@ -38,7 +38,7 @@ body {
 .clear-btn {
   position: absolute;
   right: 16px;
-  background: rgba(255, 255, 255, 0.2);
+  background: #ff6b00;
   border: none;
   color: white;
   width: 32px;
@@ -52,7 +52,7 @@ body {
 }
 
 .clear-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: #e55a00;
   transform: scale(1.1);
 }
 
