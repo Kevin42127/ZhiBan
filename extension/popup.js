@@ -6,7 +6,6 @@ const messagesContainer = document.getElementById('messages');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
 const loadingIndicator = document.getElementById('loading');
-const actionButtons = document.querySelectorAll('.action-btn');
 
 async function getApiUrl() {
   const result = await chrome.storage.sync.get(['apiUrl']);
@@ -151,14 +150,6 @@ messageInput.addEventListener('keypress', (e) => {
       sendMessage(message);
     }
   }
-});
-
-actionButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const prompt = btn.getAttribute('data-prompt');
-    messageInput.value = prompt;
-    messageInput.focus();
-  });
 });
 
 messageInput.focus();
