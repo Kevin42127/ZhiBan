@@ -196,20 +196,24 @@ export default async function handler(req, res) {
         max_completion_tokens: 8192,
         top_p: 1,
         stream: true,
-        reasoning_effort: "medium",
         stop: null
       });
     } catch (modelError) {
       console.error('Model error, trying alternative:', modelError.message);
-      chatCompletion = await groq.chat.completions.create({
-        messages: messages,
-        model: "llama-3.1-70b-versatile",
-        temperature: 1,
-        max_completion_tokens: 8192,
-        top_p: 1,
-        stream: true,
-        stop: null
-      });
+      try {
+        chatCompletion = await groq.chat.completions.create({
+          messages: messages,
+          model: "llama-3.1-70b-versatile",
+          temperature: 1,
+          max_completion_tokens: 8192,
+          top_p: 1,
+          stream: true,
+          stop: null
+        });
+      } catch (fallbackError) {
+        console.error('Fallback model also failed:', fallbackError.message);
+        throw fallbackError;
+      }
     }
 
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -222,20 +226,36 @@ export default async function handler(req, res) {
     let fullContent = '';
     try {
       for await (const chunk of chatCompletion) {
-        const content = chunk.choices[0]?.delta?.content || '';
-        if (content) {
-          fullContent += content;
-          res.write(`data: ${JSON.stringify({ content: content })}\n\n`);
+        if (chunk.choices && chunk.choices[0]) {
+          const content = chunk.choices[0]?.delta?.content || '';
+          if (content) {
+            fullContent += content;
+            res.write(`data: ${JSON.stringify({ content: content })}\n\n`);
+          }
         }
       }
       res.write(`data: ${JSON.stringify({ done: true, fullContent: fullContent })}\n\n`);
       res.end();
     } catch (streamError) {
       console.error('Stream error:', streamError);
+      
+      if (streamError.status === 400 && streamError.error?.code === 'output_parse_failed') {
+        if (!res.headersSent) {
+          return res.status(500).json({ 
+            error: '模型回應格式錯誤',
+            message: 'AI 回應格式異常，請稍後再試或重新發送訊息',
+            details: 'Parsing failed. The model generated output that could not be parsed.'
+          });
+        }
+        res.end();
+        return;
+      }
+      
       if (!res.headersSent) {
         return res.status(500).json({ 
           error: 'Stream error',
-          details: streamError.message 
+          message: '處理回應時發生錯誤，請稍後再試',
+          details: streamError.message || 'Unknown error'
         });
       }
       res.end();

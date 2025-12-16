@@ -483,7 +483,13 @@ async function sendMessage(message) {
     }
   } catch (error) {
     console.error('Error:', error);
-    showError(`錯誤: ${error.message}`);
+    let errorMessage = error.message;
+    
+    if (error.message.includes('模型回應格式錯誤') || error.message.includes('Parsing failed')) {
+      errorMessage = 'AI 回應格式異常\n\n請稍後再試或重新發送訊息';
+    }
+    
+    showError(`錯誤: ${errorMessage}`);
     if (aiMessageDiv && aiMessageDiv.parentNode) {
       aiMessageDiv.remove();
     }
