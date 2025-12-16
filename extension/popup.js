@@ -20,6 +20,7 @@ const confirmDialogCancel = document.getElementById('confirmDialogCancel');
 const welcomePage = document.getElementById('welcomePage');
 const chatContainer = document.getElementById('chatContainer');
 const startChatBtn = document.getElementById('startChatBtn');
+const emptyState = document.getElementById('emptyState');
 
 async function getApiUrl() {
   const result = await chrome.storage.sync.get(['apiUrl']);
@@ -99,11 +100,26 @@ async function loadConversationHistory() {
   }
 }
 
+function showEmptyState() {
+  emptyState.style.display = 'flex';
+  messagesContainer.style.display = 'none';
+}
+
+function hideEmptyState() {
+  emptyState.style.display = 'none';
+  messagesContainer.style.display = 'flex';
+}
+
 function renderHistory() {
   messagesContainer.innerHTML = '';
   
   const totalMessages = conversationHistory.length;
-  if (totalMessages === 0) return;
+  if (totalMessages === 0) {
+    showEmptyState();
+    return;
+  }
+  
+  hideEmptyState();
   
   let startIndex = 0;
   if (totalMessages > MAX_VISIBLE_MESSAGES) {
@@ -188,6 +204,7 @@ async function clearAllMessages() {
     conversationHistory = [];
     messagesContainer.innerHTML = '';
     await saveConversationHistory();
+    showEmptyState();
   }
 }
 
@@ -334,6 +351,7 @@ async function sendMessage(message) {
     hideWelcomePage();
   }
 
+  hideEmptyState();
   addMessage(message, 'user');
   conversationHistory.push({ role: 'user', content: message });
   await saveConversationHistory();
@@ -455,6 +473,17 @@ startChatBtn.addEventListener('click', async () => {
   setTimeout(() => {
     messageInput.focus();
   }, 100);
+});
+
+document.querySelectorAll('.quick-question-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const question = btn.getAttribute('data-question');
+    if (question) {
+      messageInput.value = question;
+      adjustTextareaHeight();
+      sendMessage(question);
+    }
+  });
 });
 
 loadConversationHistory();

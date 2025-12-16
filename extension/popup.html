@@ -62,6 +62,31 @@
     </div>
 
     <div class="chat-container" id="chatContainer">
+      <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-state-icon">
+          <span class="material-icons">chat_bubble_outline</span>
+        </div>
+        <h3>還沒有對話記錄</h3>
+        <p>開始你的第一次對話吧！</p>
+        <div class="quick-questions">
+          <button class="quick-question-btn" data-question="幫我寫一封郵件">
+            <span class="material-icons">email</span>
+            <span>幫我寫一封郵件</span>
+          </button>
+          <button class="quick-question-btn" data-question="解釋這個概念">
+            <span class="material-icons">lightbulb</span>
+            <span>解釋這個概念</span>
+          </button>
+          <button class="quick-question-btn" data-question="總結這段文字">
+            <span class="material-icons">summarize</span>
+            <span>總結這段文字</span>
+          </button>
+          <button class="quick-question-btn" data-question="提供建議">
+            <span class="material-icons">tips_and_updates</span>
+            <span>提供建議</span>
+          </button>
+        </div>
+      </div>
       <div class="messages" id="messages"></div>
       <div class="loading" id="loading" style="display: none;">
         <div class="loading-avatar">
