@@ -10,7 +10,6 @@ let visibleEndIndex = 0;
 const messagesContainer = document.getElementById('messages');
 const messageInput = document.getElementById('messageInput');
 const sendBtn = document.getElementById('sendBtn');
-const loadingIndicator = document.getElementById('loading');
 const clearBtn = document.getElementById('clearBtn');
 const confirmDialogOverlay = document.getElementById('confirmDialogOverlay');
 const confirmDialogTitle = document.getElementById('confirmDialogTitle');
@@ -324,13 +323,11 @@ function scrollToBottom() {
 }
 
 function showLoading() {
-  loadingIndicator.style.display = 'flex';
   sendBtn.disabled = true;
   messageInput.disabled = true;
 }
 
 function hideLoading() {
-  loadingIndicator.style.display = 'none';
   sendBtn.disabled = false;
   messageInput.disabled = false;
 }
