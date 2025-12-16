@@ -67,6 +67,24 @@ body {
   padding: 16px 20px;
   background: #ffffff;
   flex: 1;
+  scroll-behavior: smooth;
+}
+
+.chat-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-container::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.chat-container::-webkit-scrollbar-thumb:hover {
+  background: #999;
 }
 
 .messages {
@@ -134,6 +152,34 @@ body {
   font-size: 14px;
   position: relative;
   flex: 1;
+  white-space: pre-wrap;
+  animation: messageAppear 0.3s ease-out;
+}
+
+@keyframes messageAppear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message.ai .message-content {
+  animation: typingEffect 0.3s ease-out;
+}
+
+@keyframes typingEffect {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .message.user .message-content {
@@ -156,6 +202,20 @@ body {
   padding: 12px 16px;
   color: #667eea;
   font-size: 14px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.loading span:last-child {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .loading-avatar {
@@ -189,16 +249,28 @@ body {
   padding: 16px 20px;
   background: #ffffff;
   border-top: 1px solid #e9ecef;
+  align-items: flex-end;
+}
+
+.input-wrapper {
+  flex: 1;
+  position: relative;
 }
 
 #messageInput {
-  flex: 1;
+  width: 100%;
+  min-height: 44px;
+  max-height: 120px;
   padding: 12px 16px;
   border: 2px solid #e9ecef;
   border-radius: 24px;
   font-size: 14px;
+  font-family: inherit;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, height 0.2s;
+  resize: none;
+  overflow-y: auto;
+  line-height: 1.5;
 }
 
 #messageInput:focus {
@@ -208,6 +280,23 @@ body {
 #messageInput:disabled {
   background: #f8f9fa;
   cursor: not-allowed;
+}
+
+#messageInput::-webkit-scrollbar {
+  width: 6px;
+}
+
+#messageInput::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#messageInput::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+#messageInput::-webkit-scrollbar-thumb:hover {
+  background: #999;
 }
 
 .send-btn {

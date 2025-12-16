@@ -1,7 +1,10 @@
 const API_BASE_URL = 'https://zhiban.vercel.app/api/chat';
 const STORAGE_KEY = 'zhiban_conversation_history';
+const MAX_VISIBLE_MESSAGES = 50;
 
 let conversationHistory = [];
+let visibleStartIndex = 0;
+let visibleEndIndex = 0;
 
 const messagesContainer = document.getElementById('messages');
 const messageInput = document.getElementById('messageInput');
@@ -59,7 +62,21 @@ async function loadConversationHistory() {
 function renderHistory() {
   messagesContainer.innerHTML = '';
   
-  conversationHistory.forEach((msg) => {
+  const totalMessages = conversationHistory.length;
+  if (totalMessages === 0) return;
+  
+  let startIndex = 0;
+  if (totalMessages > MAX_VISIBLE_MESSAGES) {
+    startIndex = totalMessages - MAX_VISIBLE_MESSAGES;
+    visibleStartIndex = startIndex;
+    visibleEndIndex = totalMessages;
+  } else {
+    visibleStartIndex = 0;
+    visibleEndIndex = totalMessages;
+  }
+  
+  for (let i = startIndex; i < totalMessages; i++) {
+    const msg = conversationHistory[i];
     if (msg && msg.content !== undefined && msg.role) {
       let role = msg.role;
       if (role === 'assistant') {
@@ -84,7 +101,9 @@ function renderHistory() {
         }
       }
     }
-  });
+  }
+  
+  scrollToBottom();
 }
 
 function showConfirmDialog(title, message) {
@@ -196,8 +215,18 @@ function addMessage(content, role, messageDiv = null) {
     }
   }
   
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  scrollToBottom();
   return messageDiv;
+}
+
+function scrollToBottom() {
+  const chatContainer = document.querySelector('.chat-container');
+  if (chatContainer) {
+    chatContainer.scrollTo({
+      top: chatContainer.scrollHeight,
+      behavior: 'smooth'
+    });
+  }
 }
 
 function showLoading() {
@@ -242,6 +271,7 @@ async function sendMessage(message) {
   await saveConversationHistory();
   
   messageInput.value = '';
+  messageInput.style.height = 'auto';
   showLoading();
 
   const aiMessageDiv = addMessage('', 'ai');
@@ -291,10 +321,12 @@ async function sendMessage(message) {
             if (data.content) {
               aiMessageContent += data.content;
               addMessage(aiMessageContent, 'ai', aiMessageDiv);
+              scrollToBottom();
             }
             if (data.done) {
               conversationHistory.push({ role: 'ai', content: aiMessageContent });
               await saveConversationHistory();
+              scrollToBottom();
               break;
             }
           } catch (e) {
@@ -324,12 +356,22 @@ sendBtn.addEventListener('click', () => {
   }
 });
 
-messageInput.addEventListener('keypress', (e) => {
+function adjustTextareaHeight() {
+  messageInput.style.height = 'auto';
+  const scrollHeight = messageInput.scrollHeight;
+  const maxHeight = 120;
+  messageInput.style.height = Math.min(scrollHeight, maxHeight) + 'px';
+}
+
+messageInput.addEventListener('input', adjustTextareaHeight);
+
+messageInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
     const message = messageInput.value.trim();
     if (message) {
       sendMessage(message);
+      messageInput.style.height = 'auto';
     }
   }
 });
