@@ -31,9 +31,9 @@ export default async function handler(req, res) {
 
     let systemPromptContent = '';
     if (language === 'zh-TW') {
-      systemPromptContent = '請使用繁體中文回應。所有回應必須使用繁體中文，不得使用其他語言。';
+      systemPromptContent = '請使用繁體中文回應。所有回應必須使用繁體中文，不得使用其他語言。回應格式必須是純文字，不要使用 Markdown 格式、代碼塊、粗體、斜體等任何格式化符號，只輸出純文字內容。';
     } else {
-      systemPromptContent = 'Please respond in English. All responses must be in English only, do not use other languages.';
+      systemPromptContent = 'Please respond in English. All responses must be in English only, do not use other languages. Response format must be plain text only, do not use Markdown formatting, code blocks, bold, italic, or any other formatting symbols. Output only plain text content.';
     }
 
     const systemPrompt = {

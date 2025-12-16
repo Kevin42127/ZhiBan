@@ -66,6 +66,17 @@ function addDeleteButton(messageDiv, index) {
   return deleteBtn;
 }
 
+async function deleteMessage(index) {
+  if (index < 0 || index >= conversationHistory.length) return;
+  
+  const confirmed = await showConfirmDialog('確認刪除', '確定要刪除這條消息嗎？');
+  if (confirmed) {
+    conversationHistory.splice(index, 1);
+    await saveConversationHistory();
+    renderHistory();
+  }
+}
+
 function showConfirmDialog(title, message) {
   return new Promise((resolve) => {
     confirmDialogTitle.textContent = title;
