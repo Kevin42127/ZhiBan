@@ -334,14 +334,28 @@ body {
   min-width: 0;
   word-break: break-word;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04) inset;
+  hyphens: auto;
+  text-rendering: optimizeLegibility;
 }
 
 .message-content p {
   margin: 0 0 12px 0;
+  text-align: left;
+  text-indent: 0;
+  word-spacing: 0.1em;
+  letter-spacing: 0.01em;
+}
+
+.message-content p:first-child {
+  text-indent: 0;
 }
 
 .message-content p:last-child {
   margin-bottom: 0;
+}
+
+.message-content br {
+  line-height: 1.8;
 }
 
 @keyframes messageAppear {

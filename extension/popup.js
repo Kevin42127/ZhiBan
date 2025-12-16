@@ -317,12 +317,59 @@ function addMessage(content, role, messageDiv = null) {
 function formatTextContent(text) {
   if (!text) return '';
   
-  return text
+  let formatted = text;
+  
+  formatted = addSpaceBetweenChineseAndEnglish(formatted);
+  formatted = optimizePunctuationLineBreak(formatted);
+  formatted = cleanMultipleEmptyLines(formatted);
+  
+  return formatted
     .split('\n\n')
     .map(paragraph => paragraph.trim())
     .filter(paragraph => paragraph.length > 0)
-    .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+    .map(paragraph => {
+      const optimized = optimizeLongText(paragraph);
+      return `<p>${optimized.replace(/\n/g, '<br>')}</p>`;
+    })
     .join('');
+}
+
+function addSpaceBetweenChineseAndEnglish(text) {
+  return text
+    .replace(/([\u4e00-\u9fff])([a-zA-Z])/g, '$1 $2')
+    .replace(/([a-zA-Z])([\u4e00-\u9fff])/g, '$1 $2')
+    .replace(/([\u4e00-\u9fff])([0-9])/g, '$1 $2')
+    .replace(/([0-9])([\u4e00-\u9fff])/g, '$1 $2');
+}
+
+function optimizePunctuationLineBreak(text) {
+  const punctuation = /([。，、；：！？）】」』〉》])/g;
+  return text.replace(punctuation, '$1\u200B');
+}
+
+function cleanMultipleEmptyLines(text) {
+  return text.replace(/\n{3,}/g, '\n\n');
+}
+
+function optimizeLongText(text) {
+  if (text.length > 500) {
+    const sentences = text.split(/([。！？\n])/);
+    let result = '';
+    let currentLength = 0;
+    
+    for (let i = 0; i < sentences.length; i++) {
+      const sentence = sentences[i];
+      if (currentLength + sentence.length > 80 && currentLength > 0) {
+        result += '\n';
+        currentLength = 0;
+      }
+      result += sentence;
+      currentLength += sentence.length;
+    }
+    
+    return result;
+  }
+  return text;
 }
 
 function scrollToBottom() {
