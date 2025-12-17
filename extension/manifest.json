@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "智伴 ZhiBan",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "智能陪伴聊天助理",
   "permissions": [
     "storage"

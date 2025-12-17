@@ -283,15 +283,92 @@ function formatTextContent(text) {
   formatted = optimizePunctuationLineBreak(formatted);
   formatted = cleanMultipleEmptyLines(formatted);
   
-  return formatted
-    .split('\n\n')
-    .map(paragraph => paragraph.trim())
-    .filter(paragraph => paragraph.length > 0)
-    .map(paragraph => {
-      const optimized = optimizeLongText(paragraph);
-      return `<p>${optimized.replace(/\n/g, '<br>')}</p>`;
-    })
-    .join('');
+  const paragraphs = formatted.split('\n\n').map(p => p.trim()).filter(p => p.length > 0);
+  const result = [];
+  
+  for (let i = 0; i < paragraphs.length; i++) {
+    const paragraph = paragraphs[i];
+    const lines = paragraph.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    if (lines.length === 0) continue;
+    
+    const bulletItems = [];
+    const numberedItems = [];
+    const regularLines = [];
+    let inBulletList = false;
+    let inNumberedList = false;
+    
+    for (let j = 0; j < lines.length; j++) {
+      const line = lines[j];
+      const bulletMatch = line.match(/^[-•]\s+(.+)$/);
+      const numberedMatch = line.match(/^\d+\.\s+(.+)$/);
+      
+      if (bulletMatch) {
+        if (!inBulletList && (bulletItems.length > 0 || regularLines.length > 0)) {
+          if (regularLines.length > 0) {
+            result.push(`<p>${regularLines.join('<br>')}</p>`);
+            regularLines.length = 0;
+          }
+          if (bulletItems.length > 0) {
+            result.push(formatBulletList(bulletItems));
+            bulletItems.length = 0;
+          }
+        }
+        bulletItems.push(bulletMatch[1]);
+        inBulletList = true;
+        inNumberedList = false;
+      } else if (numberedMatch) {
+        if (!inNumberedList && (numberedItems.length > 0 || regularLines.length > 0)) {
+          if (regularLines.length > 0) {
+            result.push(`<p>${regularLines.join('<br>')}</p>`);
+            regularLines.length = 0;
+          }
+          if (numberedItems.length > 0) {
+            result.push(formatNumberedList(numberedItems));
+            numberedItems.length = 0;
+          }
+        }
+        numberedItems.push(numberedMatch[1]);
+        inNumberedList = true;
+        inBulletList = false;
+      } else {
+        if (inBulletList && bulletItems.length > 0) {
+          result.push(formatBulletList(bulletItems));
+          bulletItems.length = 0;
+          inBulletList = false;
+        }
+        if (inNumberedList && numberedItems.length > 0) {
+          result.push(formatNumberedList(numberedItems));
+          numberedItems.length = 0;
+          inNumberedList = false;
+        }
+        regularLines.push(line);
+      }
+    }
+    
+    if (bulletItems.length > 0) {
+      result.push(formatBulletList(bulletItems));
+    }
+    if (numberedItems.length > 0) {
+      result.push(formatNumberedList(numberedItems));
+    }
+    if (regularLines.length > 0) {
+      const optimized = optimizeLongText(regularLines.join('\n'));
+      result.push(`<p>${optimized.replace(/\n/g, '<br>')}</p>`);
+    }
+  }
+  
+  return result.join('');
+}
+
+function formatBulletList(items) {
+  const listItems = items.map(item => `<li>${item}</li>`).join('');
+  return `<ul>${listItems}</ul>`;
+}
+
+function formatNumberedList(items) {
+  const listItems = items.map(item => `<li>${item}</li>`).join('');
+  return `<ol>${listItems}</ol>`;
 }
 
 function addSpaceBetweenChineseAndEnglish(text) {
@@ -608,6 +685,18 @@ messageInput.addEventListener('keydown', (e) => {
 
 clearBtn.addEventListener('click', () => {
   clearAllMessages();
+});
+
+document.querySelectorAll('.example-question').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const question = btn.getAttribute('data-question');
+    if (question) {
+      messageInput.value = question;
+      messageInput.style.height = 'auto';
+      messageInput.style.height = `${Math.min(messageInput.scrollHeight, 180)}px`;
+      sendMessage(question);
+    }
+  });
 });
 
 loadConversationHistory();

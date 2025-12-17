@@ -18,7 +18,17 @@
 
     <div class="chat-container" id="chatContainer">
       <div class="empty-state" id="emptyState" style="display: none;">
-        <h3>你好 ! 我可以為你做什麼 ?</h3>
+        <div class="empty-state-icon">
+          <span class="material-icons">chat_bubble_outline</span>
+        </div>
+        <h3>你好！我可以為你做什麼？</h3>
+        <p>試試問我這些問題：</p>
+        <div class="example-questions">
+          <button class="example-question" data-question="推薦一些健康的生活習慣">推薦一些健康的生活習慣</button>
+          <button class="example-question" data-question="如何改善睡眠品質？">如何改善睡眠品質？</button>
+          <button class="example-question" data-question="推薦一些時間管理技巧">推薦一些時間管理技巧</button>
+          <button class="example-question" data-question="如何規劃旅行行程？">如何規劃旅行行程？</button>
+        </div>
       </div>
       <div class="messages" id="messages"></div>
     </div>
