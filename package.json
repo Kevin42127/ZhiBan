@@ -1,6 +1,6 @@
 {
   "name": "zhiban",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "智伴 ZhiBan Chrome 擴充功能後端",
   "type": "module",
   "engines": {
